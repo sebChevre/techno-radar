@@ -47,6 +47,6 @@
     "lodash": "^4.16.2",
     "sanitize-html": "^1.13.0",
     "xlsx": "^0.9.13",
-    "npm install browserify-fs":"^1.0.0"
+    "browserify-fs":"^1.0.0"
   }
 }
