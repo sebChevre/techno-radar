@@ -19,7 +19,7 @@
   },
   "keywords": [
     "tech-radar"
-  ],git remote rm
+  ],
   "license": "AGPL-3.0",
   "devDependencies": {
     "babel-core": "^6.14.0",
