@@ -8,9 +8,17 @@ const args = require('yargs').argv;
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+//var rootPath = process.env.rootpath;
+
 let isProd = args.prod
 let isDev = args.dev;
+let rootContext = '/';
 
+if(args.rc){
+    rootContext = '/'.concat(args.rc)
+}
+
+console.log(rootContext);
 let entry = ['./src/site.js'];
 let devtool;
 
@@ -42,6 +50,8 @@ if (isProd) {
     );
 }
 
+
+
 module.exports = {
     entry: entry,
 
@@ -55,8 +65,8 @@ module.exports = {
     target: 'web',
 
     output: {
-        path: buildPath,
-        publicPath: '/',
+        publicPath: rootContext,
+        path: path.join(buildPath,rootContext),
         filename: '[name].[hash].js'
     },
 
@@ -90,4 +100,5 @@ module.exports = {
         port: 8080
     }
 };
+
 

@@ -14,6 +14,10 @@ body {
   font-family: Tahoma;
 }
 
+.shadow-text{
+  text-shadow: 4px 4px 5px grey;
+}
+
 .rounded-new {
   -moz-border-radius:5px 5px 5px 5px;  // rounds corners for firefox
   border-radius:5px 5px 5px 5px;  //rounds corners for other browsers

@@ -5,7 +5,8 @@ const _ = {
     capitalize: require('lodash/capitalize'),
     each: require('lodash/each')
 };
-var XLSX = require('xlsx');
+
+const XLSX = require('xlsx');
 const InputSanitizer = require('./inputSanitizer');
 const Radar = require('../models/radar');
 const Quadrant = require('../models/quadrant');
@@ -22,7 +23,7 @@ const ExcelSheet = function (fileName, description) {
 
     self.build = function () {
 
-        var url = "xls/" + fileName;
+        var url = "/xls/" + fileName;
 
         if(description === undefined){
             description = fileName;
@@ -213,41 +214,15 @@ var QueryParams = function (queryString) {
     return queryParams
 };
 
-function getWorkSheet () {
-    console.log('before')
-    var url = "xls/test1.xlsx";
-    var oReq = new XMLHttpRequest();
-    oReq.open("GET", url, true);
-    oReq.responseType = "arraybuffer";
 
-    oReq.onload = function(e) {
-        var arraybuffer = oReq.response;
-
-        /* convert data to binary string */
-        var data = new Uint8Array(arraybuffer);
-        var arr = new Array();
-        for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
-        var bstr = arr.join("");
-
-        /* Call XLSX */
-        var workbook = XLSX.read(bstr, {type:"binary"});
-
-        /* Get worksheet */
-        var worksheet = workbook.Sheets[0];
-        console.log("name")
-        //alert(worksheet.name);
-
-        return worksheet;
-    }
-
-    oReq.send();
-
-    console.log('after')
-}
 
 function getFiles (callback) {
     console.log('before')
-    var url = "xls/directory.json";
+
+    console.log('before')
+    console.log(path.dirname(require.main.filename));
+
+    var url = "/xls/directory.json";
     var oReq = new XMLHttpRequest();
     oReq.open("GET", url, true);
     oReq.responseType = "json";
@@ -274,9 +249,10 @@ function getFiles (callback) {
 
 
 //Gere les requetes entrantes et le chargement de l'app
-const ExcelSheetInput = function () {
+const App = function () {
 
-    var self = {};
+
+  var self = {};
 
     //Point d'entrée app
     self.build = function () {
@@ -300,7 +276,7 @@ const ExcelSheetInput = function () {
 
             plotLogo(content);
 
-            var bannerText = '<h1>Versions</h1>';
+            var bannerText = '<h1 class="shadow-text">Versions</h1>';
 
             var versionsList = '<div>';
 
@@ -309,17 +285,10 @@ const ExcelSheetInput = function () {
             getFiles(function (allFiles) {
                 console.log(allFiles);
                 allFiles.files.forEach(function (file){
-                    versionsList = versionsList.concat("<div><a class='versions-link' href='/?f=",file.name,"&d=",file.desc,"'>",file.desc,"</a></div>");
-                    //console.log(file);
+                    versionsList = versionsList.concat("<div><a class='versions-link' href='"+ global.appRoot + "?f=",file.name,"&d=",file.desc,"'>",file.desc,"</a></div>");
                 });
 
                 versionsList = versionsList.concat("</ul></div>");
-
-                //bannerText = bannerText.concat("</p>");
-
-                console.log(bannerText);
-
-
 
                 plotBanner(content, bannerText);
 
@@ -327,14 +296,7 @@ const ExcelSheetInput = function () {
 
                 plotFooter(content);
 
-
-
             });
-
-
-
-
-
 
         }
     };
@@ -349,7 +311,7 @@ function set_document_title() {
 function plotLogo(content) {
     content.append('div')
         .attr('class', 'input-sheet__logo')
-        .html('<a href="https://www.thoughtworks.com"><img src="/images/tw-logo.png" / ></a>');
+        .html('<h1 class="shadow-text">Radar Technologique</h1>');
 }
 
 function plotFooter(content) {
@@ -381,4 +343,4 @@ function plotBanner(content, text) {
 }
 
 
-module.exports = ExcelSheetInput;
+module.exports = App;

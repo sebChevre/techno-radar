@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test2": "set tutu=toto",
     "test": "istanbul cover jasmine",
     "dev": "webpack-dev-server --dev --inline",
     "build": "webpack --prod",
@@ -12,7 +13,7 @@
     "examples": "npm run build && npm run examples:clean && npm run examples:copy",
     "publishExamples": "node ./scripts/publish-examples.js"
   },
-  "author": "ThoughtWorks",
+  "author": "sebChevre",
   "repository": {
     "type": "git",
     "url": "https://github.com/sebChevre/techno-radar"

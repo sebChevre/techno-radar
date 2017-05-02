@@ -26,16 +26,16 @@
   }
 
   .input-sheet__banner {
-    background-image: url('/images/landing-page.png');
+    background-image: linear-gradient(to right,blue,white);
     background-repeat: no-repeat;
-    background-color: $grey-light;
+    background-color: $blue_custom;
     background-size: cover;
     background-position: center;
     width: 100%;
     margin: 0 auto;
     text-align: center;
     min-height: 100px;
-    padding-top: 45px;
+    padding-top: 10px;
   }
 
   .input-sheet__form {

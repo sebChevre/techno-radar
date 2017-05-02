@@ -379,15 +379,14 @@ const Radar = function (size, radar) {
       .attr('class', 'radar-title')
       .append('div')
       .attr('class', 'radar-title__text')
+
       .append('h1')
       .text(document.title)
+        .attr('class','shadow-text')
       .style('cursor', 'pointer')
       .on('click', redrawFullRadar);
 
-    header.select('.radar-title')
-      .append('div')
-      .attr('class', 'radar-title__logo')
-      .html('<a href="https://www.thoughtworks.com"> <img src="/images/logo.png" /> </a>');
+
 
     return header;
   }
@@ -422,7 +421,7 @@ const Radar = function (size, radar) {
           .classed('go-home button no-capitalize', true)
           .text('Home')
           .on('click',function () {
-              window.location.href = "/";
+              window.location.href = global.appRoot;
           });
 
   }
