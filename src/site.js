@@ -1,6 +1,8 @@
-require('./stylesheets/base.scss');
+require('!style-loader!css-loader!resolve-url-loader!sass-loader?sourceMap!./stylesheets/base.scss');
+//require('./stylesheets/base.scss');
 require('./images/favicon.ico');
 require('./images/radar_legend.png');
+require('./images/landing-page.png');
 
 const ExcelSheetInput = require('./util/factory');
 

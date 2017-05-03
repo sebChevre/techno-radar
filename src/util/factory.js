@@ -8,6 +8,7 @@ const _ = {
 
 const XLSX = require('xlsx');
 const InputSanitizer = require('./inputSanitizer');
+const AppConstant = require('./appConstant');
 const Radar = require('../models/radar');
 const Quadrant = require('../models/quadrant');
 const Ring = require('../models/ring');
@@ -17,13 +18,17 @@ const ContentValidator = require('./contentValidator');
 const fs = require('browserify-fs');
 const path = require('path');
 
+var appConstant = new AppConstant(global.appRoot);
+
+
+
 const ExcelSheet = function (fileName, description) {
 
     var self = {};
 
     self.build = function () {
 
-        var url = "/xls/" + fileName;
+        var url = "xls/" + fileName;
 
         if(description === undefined){
             description = fileName;
@@ -216,27 +221,31 @@ var QueryParams = function (queryString) {
 
 
 
-function getFiles (callback) {
-    console.log('before')
+function getSheetList (okCallback,failCallback) {
 
-    console.log('before')
-    console.log(path.dirname(require.main.filename));
-
-    var url = "/xls/directory.json";
+    //var url = "/xls/directory.json";
     var oReq = new XMLHttpRequest();
-    oReq.open("GET", url, true);
+    oReq.open("GET", 'xls/directory.json', true);
     oReq.responseType = "json";
 
-    oReq.onload = function(e) {
-        var filesArray = oReq.response;
+    oReq.onload = function(event) {
 
-        //console.log(filesArray);
+        //url no dispo
+        if(oReq.status === 404){
+            console.error("Error during retrieving sheet directory list");
+            console.log(event);
+            failCallback(event);
+        }else{
+            var filesArray = oReq.response;
 
-        filesArray.files.forEach(function (f){
-            console.log(f);
-        })
+            filesArray.files.forEach(function (f){
+                console.log(f);
+            })
 
-        callback(filesArray);
+            okCallback(filesArray);
+        }
+
+
     }
 
     oReq.send();
@@ -262,7 +271,7 @@ const App = function () {
         console.log(queryParams);
 
 
-        //si param f ok
+        //si param f ok, génération auto du radar
         if (queryParams.f) {
             var sheet = ExcelSheet(queryParams.f,queryParams.d);
             sheet.init().build();
@@ -276,27 +285,47 @@ const App = function () {
 
             plotLogo(content);
 
-            var bannerText = '<h1 class="shadow-text">Versions</h1>';
+            var bannerText = '<h2 class="shadow-text">'.concat(appConstant.RADAR_VERSIONS_TITLE,'</h2>');
 
-            var versionsList = '<div>';
+            var versionsList = '<div class="numberlist"><ol>';
+
+
+            getSheetList(
+                function (allFiles) {
+                    console.log(allFiles);
+
+                    allFiles.files.forEach(function (file){
+                        versionsList = versionsList.concat("<li><a href='?f=",file.name,"&d=",file.desc,"'>",file.desc,"</a></li>");
+                    });
+
+                    versionsList = versionsList.concat("</ol></div>");
+
+                    plotBanner(content, bannerText);
+
+                    plotSheetVersionsList(content,versionsList);
+
+                    plotFooter(content);
+                },
+                function (failEvent) {
+
+                    //versionsList = versionsList.concat("Error Happened</div>");
 
 
 
-            getFiles(function (allFiles) {
-                console.log(allFiles);
-                allFiles.files.forEach(function (file){
-                    versionsList = versionsList.concat("<div><a class='versions-link' href='"+ global.appRoot + "?f=",file.name,"&d=",file.desc,"'>",file.desc,"</a></div>");
-                });
+                    plotBanner(content, bannerText);
 
-                versionsList = versionsList.concat("</ul></div>");
+                    content.append('div')
+                        .attr('class', 'files-retrieve-error')
+                        .html(appConstant.URL_DIRECTORY_ERROR);
+                    plotSheetVersionsList(content,versionsList);
 
-                plotBanner(content, bannerText);
+                    plotFooter(content);
 
-                plotVersionsList(content,versionsList);
 
-                plotFooter(content);
+                }
+            );
 
-            });
+
 
         }
     };
@@ -324,7 +353,7 @@ function plotFooter(content) {
         .html('Librement inspiré du Radar Technologique de <a href="https://www.thoughtworks.com"> ThoughtWorks</a>. ');
 
 }
-function plotVersionsList(content, html){
+function plotSheetVersionsList(content, html){
     content
         .append('div')
         .attr('class', 'versions-list')
