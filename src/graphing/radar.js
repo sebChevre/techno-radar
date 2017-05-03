@@ -60,6 +60,9 @@ const Radar = function (size, radar) {
   }
 
   function plotQuadrant(rings, quadrant) {
+
+
+
     var quadrantGroup = svg.append('g')
       .attr('class', 'quadrant-group quadrant-group-' + quadrant.order)
       .on('mouseover', mouseoverQuadrant.bind({}, quadrant.order))
@@ -67,6 +70,10 @@ const Radar = function (size, radar) {
       .on('click', selectQuadrant.bind({}, quadrant.order, quadrant.startAngle));
 
     rings.forEach(function (ring, i) {
+
+      console.log(ring.name())
+        console.log(ring.order())
+
       var arc = d3.arc()
         .innerRadius(ringCalculator.getRadius(i))
         .outerRadius(ringCalculator.getRadius(i + 1))

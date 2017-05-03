@@ -50,7 +50,8 @@ const Radar = function() {
 
   self.rings = function () {
     return _.sortBy(_.map(_.uniqBy(allBlips(), function (blip) {
-      return blip.ring().name();
+      //return blip.ring().name();
+        return blip.ring();
     }), function (blip) {
       return blip.ring();
     }), function (ring) {

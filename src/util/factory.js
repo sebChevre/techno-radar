@@ -17,79 +17,185 @@ const GraphingRadar = require('../graphing/radar');
 const ContentValidator = require('./contentValidator');
 const fs = require('browserify-fs');
 const path = require('path');
+const base64 = require('base-64');
 
 var appConstant = new AppConstant(global.appRoot);
 
 
 
-const ExcelSheet = function (fileName, description) {
+const RadarElements = function (radar_id) {
 
     var self = {};
 
     self.build = function () {
 
-        var url = "xls/" + fileName;
+        //var url = "xls/" + fileName;
 
-        if(description === undefined){
+       /* if(description === undefined){
             description = fileName;
-        }
+        }*/
 
         var oReq = new XMLHttpRequest();
 
-        oReq.open("GET", url, true);
-        oReq.responseType = "arraybuffer";
+        oReq.open("GET", 'http://localhost:8080/techno-radar/element?filter={"_ref":"' + radar_id + '"}', true);
+        oReq.setRequestHeader("Authorization", "Basic " + base64.encode("admin:changeit"));
+        oReq.responseType = "json";
+
+        //oReq.open("GET", url, true);
+        //oReq.responseType = "arraybuffer";
 
 
         oReq.onload = function(e) {
             console.log(e);
+            console.log(oReq.response);
 
-            var arraybuffer = oReq.response;
+            var radarElements = oReq.response;
 
             /* convert data to binary string */
-            var data = new Uint8Array(arraybuffer);
-            var arr = new Array();
+           // var data = new Uint8Array(arraybuffer);
+            // var arr = new Array();
 
-            for(var i = 0; i != data.length; ++i) {
-                arr[i] = String.fromCharCode(data[i]);
-            }
+            //for(var i = 0; i != data.length; ++i) {
+             //   arr[i] = String.fromCharCode(data[i]);
+            //}
 
-            var bstr = arr.join("");
+            //var bstr = arr.join("");
 
             /* Call XLSX */
-            var workbook = XLSX.read(bstr, {type:"binary"});
+           // var workbook = XLSX.read(bstr, {type:"binary"});
 
-            console.log(workbook);
+           // console.log(workbook);
 
             /* Get worksheet */
-            var worksheet = workbook.Sheets["Feuil1"];
+            //var worksheet = workbook.Sheets["Feuil1"];
 
-            var columnsName = getColumnNames(worksheet);
+            //var columnsName = getColumnNames(worksheet);
 
-            createRadar(worksheet,description);
+            var elements = oReq.response._embedded;
+
+            createRadar(
+                function (anneaux,quadrants) {
+                    console.log(anneaux)
+                    console.log(quadrants)
+
+                    var ringMap = {};
+                    var maxRings = 4;
+
+                    _.each(anneaux, function (ringName, i) {
+
+                        console.log(i);
+
+                        ringMap[ringName] = new Ring(ringName, i);
+                    });
+
+                    console.log(ringMap);
+
+                    var quadrantsObj = {};
+
+                    _.each(quadrants, function (quadrant) {
+
+                        console.log(quadrant);
+
+                        quadrantsObj[quadrant] = new Quadrant(_.capitalize(quadrant));
+
+                    });
+
+
+                    console.log(quadrantsObj)
+                    console.log(ringMap);
+
+                    _.each(elements, function (element) {
+
+                        console.log(element);
+
+                        blip = new Blip(element.name,
+                            ringMap[element.qualification],
+                            element.isNew.toLowerCase() === 'true',
+                            //element.topic,
+                            element.description);
+
+                        console.log(blip.ring().name())
+
+                        quadrantsObj[element.theme]
+
+
+                            .add(blip);
+
+
+                    });
+
+
+
+                    console.log(quadrantsObj)
+
+                    var radar = new Radar();
+                    _.each(quadrantsObj, function (quadrant) {
+                        radar.addQuadrant(quadrant)
+                    });
+
+                    console.log(radar)
+                    var size = (window.innerHeight - 133) < 620 ? 620 : window.innerHeight - 133;
+
+                    new GraphingRadar(size, radar).init().plot();
+                },
+                function () {}
+            );
 
         }
 
         oReq.send();
 
-        function createRadar(worksheet,description) {
+        function createRadar(okCallback, failCallback) {
 
+
+            var oReq = new XMLHttpRequest();
+                //oReq.open("GET", 'xls/directory.json', true);
+            oReq.open("GET", 'http://localhost:8080/techno-radar/radar/' + radar_id, true);
+            oReq.setRequestHeader("Authorization", "Basic " + base64.encode("admin:changeit"));
+            oReq.responseType = "json";
+
+            oReq.onload = function(event) {
+
+                console.log(oReq.response);
+
+                var radar = oReq.response;
+               console.log(radar);
+
+               var anneaux = radar.anneaux;
+               var quadrants = radar.quadrants;
+
+               okCallback(anneaux,quadrants);
+                // var rings = radar.
+
+            }
+
+            oReq.send();
+
+/*
             try {
 
-                var columnNames = getColumnNames(worksheet);
+                console.log('create radar')
+                console.log(elements)
 
-                var contentValidator = new ContentValidator(columnNames);
-                contentValidator.verifyContent();
-                contentValidator.verifyHeaders();
+               // var columnNames = getColumnNames(worksheet);
 
-                var all = getElements(worksheet);
+                //var contentValidator = new ContentValidator(columnNames);
+                //contentValidator.verifyContent();
+                //contentValidator.verifyHeaders();
+
+                //var all = getElements(worksheet);
 
 
-                var blips = _.map(all, new InputSanitizer().sanitize);
+                //var blips = _.map(elements, new InputSanitizer().sanitize);
 
                 document.title = description;
                 d3.selectAll(".chargement").remove();
 
-                var rings = _.map(_.uniqBy(blips, 'ring'), 'ring');
+                getRings(radar_id,
+                    function () {},
+                    function () {}
+                );
+
                 var ringMap = {};
                 var maxRings = 4;
 
@@ -124,7 +230,10 @@ const ExcelSheet = function (fileName, description) {
             } catch (exception) {
                 console.log(exception);
             }
+            */
         }
+
+
 
         function getColumnNames (worksheet) {
             var columnnames = [];
@@ -225,10 +334,15 @@ function getSheetList (okCallback,failCallback) {
 
     //var url = "/xls/directory.json";
     var oReq = new XMLHttpRequest();
-    oReq.open("GET", 'xls/directory.json', true);
+    //oReq.open("GET", 'xls/directory.json', true);
+    oReq.open("GET", 'http://localhost:8080/techno-radar/radar', true);
+    oReq.setRequestHeader("Authorization", "Basic " + base64.encode("admin:changeit"));
     oReq.responseType = "json";
 
     oReq.onload = function(event) {
+
+        console.log(oReq.response);
+
 
         //url no dispo
         if(oReq.status === 404){
@@ -238,7 +352,7 @@ function getSheetList (okCallback,failCallback) {
         }else{
             var filesArray = oReq.response;
 
-            filesArray.files.forEach(function (f){
+            filesArray._embedded.forEach(function (f){
                 console.log(f);
             })
 
@@ -272,8 +386,8 @@ const App = function () {
 
 
         //si param f ok, génération auto du radar
-        if (queryParams.f) {
-            var sheet = ExcelSheet(queryParams.f,queryParams.d);
+        if (queryParams.rid) {
+            var sheet = RadarElements(queryParams.rid);
             sheet.init().build();
         } else {
 
@@ -294,8 +408,9 @@ const App = function () {
                 function (allFiles) {
                     console.log(allFiles);
 
-                    allFiles.files.forEach(function (file){
-                        versionsList = versionsList.concat("<li><a href='?f=",file.name,"&d=",file.desc,"'>",file.desc,"</a></li>");
+                    allFiles._embedded.forEach(function (radar){
+                        console.log(radar._id);
+                        versionsList = versionsList.concat("<li><a href='?rid=",radar._id.$oid,"'>",radar.description,"</a></li>");
                     });
 
                     versionsList = versionsList.concat("</ol></div>");
