@@ -29,11 +29,6 @@ const RadarElements = function (radar_id) {
 
     self.build = function () {
 
-        //var url = "xls/" + fileName;
-
-        /* if(description === undefined){
-         description = fileName;
-         }*/
 
         var oReq = new XMLHttpRequest();
 
@@ -41,12 +36,9 @@ const RadarElements = function (radar_id) {
         oReq.setRequestHeader("Authorization", "Basic " + base64.encode("admin:changeit"));
         oReq.responseType = "json";
 
-        //oReq.open("GET", url, true);
-        //oReq.responseType = "arraybuffer";
-
-
         oReq.onload = function(e) {
-            console.log(e);
+
+            console.log('Elements from radar [' + radar_id + '] loaded');
             console.log(oReq.response);
 
             var radarElements = oReq.response;
@@ -75,6 +67,8 @@ const RadarElements = function (radar_id) {
 
             createRadar(
                 function (anneaux,quadrants) {
+                    console.log('Creating radar....');
+
                     console.log(anneaux)
                     console.log(quadrants)
 
@@ -141,6 +135,10 @@ const RadarElements = function (radar_id) {
                     console.log(rings)
 
                     var size = (window.innerHeight - 133) < 620 ? 620 : window.innerHeight - 133;
+
+                    console.log('Graphong radar...');
+                    console.log(rings);
+                    console.log(radar);
 
                     new GraphingRadar(size, radar,rings).init().plot();
                 },
@@ -403,13 +401,18 @@ function getSheetList (okCallback,failCallback) {
 const App = function () {
 
 
+
     var self = {};
 
     //Point d'entrée app
     self.build = function () {
 
+        console.log('App build start');
+
         //recup query
         var queryParams = QueryParams(window.location.search.substring(1));
+
+        console.log('Query params: ');
         console.log(queryParams);
 
 
