@@ -342,10 +342,32 @@ function getSheetList (okCallback,failCallback) {
     var oReq = new XMLHttpRequest();
     //oReq.open("GET", 'xls/directory.json', true);
     oReq.open("GET", 'http://localhost:8080/techno-radar/radar', true);
+
     oReq.setRequestHeader("Authorization", "Basic " + base64.encode("admin:changeit"));
     oReq.responseType = "json";
 
-    oReq.onload = function(event) {
+    //oReq.onreadystatechange = function()
+
+    /*oReq.open("GET","Page.aspx",false);
+    {
+        if (xmlhttp.readyState==4)
+        {
+            if (xmlhttp.status==200)
+            {
+                //Ajax handling logic
+            }
+        }
+    }*/
+
+    oReq.onreadystatechange = function() {
+
+        if (oReq.readyState === XMLHttpRequest.DONE) {
+            if (oReq.status === 200) {
+                alert(oReq.response);
+            } else {
+                alert('There was a problem with the request.');
+            }
+        }
 
         console.log(oReq.response);
 
