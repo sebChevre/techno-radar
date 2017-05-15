@@ -31,9 +31,9 @@ const RadarElements = function (radar_id) {
 
         //var url = "xls/" + fileName;
 
-       /* if(description === undefined){
-            description = fileName;
-        }*/
+        /* if(description === undefined){
+         description = fileName;
+         }*/
 
         var oReq = new XMLHttpRequest();
 
@@ -52,19 +52,19 @@ const RadarElements = function (radar_id) {
             var radarElements = oReq.response;
 
             /* convert data to binary string */
-           // var data = new Uint8Array(arraybuffer);
+            // var data = new Uint8Array(arraybuffer);
             // var arr = new Array();
 
             //for(var i = 0; i != data.length; ++i) {
-             //   arr[i] = String.fromCharCode(data[i]);
+            //   arr[i] = String.fromCharCode(data[i]);
             //}
 
             //var bstr = arr.join("");
 
             /* Call XLSX */
-           // var workbook = XLSX.read(bstr, {type:"binary"});
+            // var workbook = XLSX.read(bstr, {type:"binary"});
 
-           // console.log(workbook);
+            // console.log(workbook);
 
             /* Get worksheet */
             //var worksheet = workbook.Sheets["Feuil1"];
@@ -79,12 +79,16 @@ const RadarElements = function (radar_id) {
                     console.log(quadrants)
 
                     var ringMap = {};
+                    var rings = [];
+
                     var maxRings = 4;
 
                     _.each(anneaux, function (ringName, i) {
 
                         console.log(i);
 
+                        ring = new Ring(ringName, i);
+                        rings.push(ring);
                         ringMap[ringName] = new Ring(ringName, i);
                     });
 
@@ -111,7 +115,7 @@ const RadarElements = function (radar_id) {
                         blip = new Blip(element.name,
                             ringMap[element.qualification],
                             element.isNew.toLowerCase() === 'true',
-                            //element.topic,
+                            element.topic,
                             element.description);
 
                         console.log(blip.ring().name())
@@ -133,10 +137,12 @@ const RadarElements = function (radar_id) {
                         radar.addQuadrant(quadrant)
                     });
 
-                    console.log(radar)
+                    console.log(radar.rings())
+                    console.log(rings)
+
                     var size = (window.innerHeight - 133) < 620 ? 620 : window.innerHeight - 133;
 
-                    new GraphingRadar(size, radar).init().plot();
+                    new GraphingRadar(size, radar,rings).init().plot();
                 },
                 function () {}
             );
@@ -149,7 +155,7 @@ const RadarElements = function (radar_id) {
 
 
             var oReq = new XMLHttpRequest();
-                //oReq.open("GET", 'xls/directory.json', true);
+            //oReq.open("GET", 'xls/directory.json', true);
             oReq.open("GET", 'http://localhost:8080/techno-radar/radar/' + radar_id, true);
             oReq.setRequestHeader("Authorization", "Basic " + base64.encode("admin:changeit"));
             oReq.responseType = "json";
@@ -159,78 +165,78 @@ const RadarElements = function (radar_id) {
                 console.log(oReq.response);
 
                 var radar = oReq.response;
-               console.log(radar);
+                console.log(radar);
 
-               var anneaux = radar.anneaux;
-               var quadrants = radar.quadrants;
+                var anneaux = radar.anneaux;
+                var quadrants = radar.quadrants;
 
-               okCallback(anneaux,quadrants);
+                okCallback(anneaux,quadrants);
                 // var rings = radar.
 
             }
 
             oReq.send();
 
-/*
-            try {
+            /*
+             try {
 
-                console.log('create radar')
-                console.log(elements)
+             console.log('create radar')
+             console.log(elements)
 
-               // var columnNames = getColumnNames(worksheet);
+             // var columnNames = getColumnNames(worksheet);
 
-                //var contentValidator = new ContentValidator(columnNames);
-                //contentValidator.verifyContent();
-                //contentValidator.verifyHeaders();
+             //var contentValidator = new ContentValidator(columnNames);
+             //contentValidator.verifyContent();
+             //contentValidator.verifyHeaders();
 
-                //var all = getElements(worksheet);
+             //var all = getElements(worksheet);
 
 
-                //var blips = _.map(elements, new InputSanitizer().sanitize);
+             //var blips = _.map(elements, new InputSanitizer().sanitize);
 
-                document.title = description;
-                d3.selectAll(".chargement").remove();
+             document.title = description;
+             d3.selectAll(".chargement").remove();
 
-                getRings(radar_id,
-                    function () {},
-                    function () {}
-                );
+             getRings(radar_id,
+             function () {},
+             function () {}
+             );
 
-                var ringMap = {};
-                var maxRings = 4;
+             var ringMap = {};
+             var maxRings = 4;
 
-                _.each(rings, function (ringName, i) {
+             _.each(rings, function (ringName, i) {
 
-                    ringMap[ringName] = new Ring(ringName, i);
-                });
+             ringMap[ringName] = new Ring(ringName, i);
+             });
 
-                var quadrants = {};
-                _.each(blips, function (blip) {
-                    if (!quadrants[blip.quadrant]) {
-                        quadrants[blip.quadrant] = new Quadrant(_.capitalize(blip.quadrant));
-                    }
+             var quadrants = {};
+             _.each(blips, function (blip) {
+             if (!quadrants[blip.quadrant]) {
+             quadrants[blip.quadrant] = new Quadrant(_.capitalize(blip.quadrant));
+             }
 
-                    quadrants[blip.quadrant]
-                        .add(new Blip(blip.name,
-                                ringMap[blip.ring],
-                                blip.isNew.toLowerCase() === 'true',
-                                blip.topic,
-                                blip.description))
-                });
+             quadrants[blip.quadrant]
+             .add(new Blip(blip.name,
+             ringMap[blip.ring],
+             blip.isNew.toLowerCase() === 'true',
+             blip.topic,
+             blip.description))
+             });
 
-                var radar = new Radar();
-                _.each(quadrants, function (quadrant) {
-                    radar.addQuadrant(quadrant)
-                });
+             var radar = new Radar();
+             _.each(quadrants, function (quadrant) {
+             radar.addQuadrant(quadrant)
+             });
 
-                var size = (window.innerHeight - 133) < 620 ? 620 : window.innerHeight - 133;
+             var size = (window.innerHeight - 133) < 620 ? 620 : window.innerHeight - 133;
 
-                new GraphingRadar(size, radar).init().plot();
+             new GraphingRadar(size, radar).init().plot();
 
-            } catch (exception) {
-                console.log(exception);
-            }
-            */
+             } catch (exception) {
+             console.log(exception);
+             }
+             */
         }
 
 
@@ -280,7 +286,7 @@ const RadarElements = function (radar_id) {
                 if(topic !== undefined){
                     blip.topic = topic.h;
                 }
-               // blip.topic = worksheet[XLSX.utils.encode_cell({c:5, r:line})].h;
+                // blip.topic = worksheet[XLSX.utils.encode_cell({c:5, r:line})].h;
 
                 elementsName.push(blip);
 
@@ -375,7 +381,7 @@ function getSheetList (okCallback,failCallback) {
 const App = function () {
 
 
-  var self = {};
+    var self = {};
 
     //Point d'entrée app
     self.build = function () {
